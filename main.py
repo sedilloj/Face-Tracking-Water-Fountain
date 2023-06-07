@@ -19,17 +19,16 @@ if __name__ == '__main__':
   camera = Camera()
 
   try:
-    # always running
+    # Always running
     while True:
-      # query for face here
+      rect_target = camera.query_expression()
 
-      # search if matching face undetected
-      while not face_query:
+      if not len(rect_target):
+        # Search if matching face undetected
         servos.search_step()
-
-      # aim to face if face is detected
-      while face_query:
-        diffX = x_middle - image
+      else:
+        # Aim to face if face is detected
+        diffX = x_middle # adjust this code later
         
   finally:
     # Clean up
