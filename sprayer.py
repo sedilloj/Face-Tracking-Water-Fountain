@@ -44,6 +44,17 @@ class Sprayer:
 
   def __exit__(self):
     GPIO.output(PUMP_PIN_OUT, GPIO.LOW)
+  
+  def spray_test(self):
+    audioIdx = random.randint(0, len(FILES) - 1)
+    pygame.mixer.music.load(FILES[audioIdx])
+    pygame.mixer.music.play()
+    
+    time.sleep(1.0)
+    GPIO.output(PUMP_PIN_OUT, GPIO.HIGH)
+    
+    time.sleep(2.0)
+    GPIO.output(PUMP_PIN_OUT, GPIO.LOW)
 
   def spray(self):
     """
@@ -80,4 +91,11 @@ class Sprayer:
     # Turn off the spray once the set time has passed
     self.sprayState = GPIO.LOW
     GPIO.output(PUMP_PIN_OUT, self.sprayState)
+
+if __name__ == '__main__':
+  GPIO.setmode(GPIO.BOARD)
+  sprayer = Sprayer()
+  #GPIO.output(PUMP_PIN_OUT, GPIO.HIGH)
+  while True:
+    sprayer.spray_test()
 
