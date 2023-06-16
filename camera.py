@@ -2,7 +2,7 @@
 import cv2
 
 tracker_ahegao = cv2.CascadeClassifier('resources/models/haarcascade_ahegao_25stages.xml')
-tracker_mouth = cv2.CascadeClassifier('resources/models/haarcascade_mcs_mouth.xml')
+tracker_mouth = cv2.CascadeClassifier('resources/models/haarcascade_mouth.xml')
 
 class Camera:
   def __init__(self):
@@ -23,14 +23,6 @@ class Camera:
 
     objects_ahegao = tracker_ahegao.detectMultiScale(gray_img, 1.05, 1) # ahegao
     objects_mouth = tracker_mouth.detectMultiScale(gray_img, 1.55, 4) # mouth
-
-    # for (x, y, w, h) in objects_mouth:
-    #   cv2.rectangle(img, (x, y), (x + w, y + h), (255, 255, 255), 2)
-    #   cv2.putText(img, 'smile', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (255, 255, 255), 2)
-
-    # for (x, y, w, h) in objects_ahegao:
-    #   cv2.rectangle(img, (x, y), (x + w, y + h), (0, 0, 255), 2)
-    #   cv2.putText(img, 'ahegao', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 0, 255), 2)
 
     b_intersect = False
     max_area_ratio = 0
@@ -71,5 +63,8 @@ class Camera:
       cv2.putText(self.image, 'mouth', (mouth_final[0], mouth_final[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 255), 2)
       cv2.rectangle(self.image, (intersect_final[0], intersect_final[1]), (intersect_final[2], intersect_final[3]), (0, 255, 0), 2)
       cv2.putText(self.image, 'intersect', (intersect_final[0], intersect_final[1] - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+      
+    cv2.imshow('Camera Feed', self.image)
+    cv2.waitKey(1)
 
     return intersect_final
