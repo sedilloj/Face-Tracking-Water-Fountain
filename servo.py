@@ -108,3 +108,16 @@ class Servos:
     self.servoY.ChangeDutyCycle(self.dutyY)
 
     return True
+
+if __name__ == '__main__':
+  # Set mode as BOARD
+  GPIO.setmode(GPIO.BOARD)
+  
+  servos = Servos()
+  servos.servoY2.ChangeDutyCycle(SERVO_Y_RESTING_DUTY)
+  servos.servoY2.ChangeDutyCycle(SERVO_Y_RESTING_DUTY)
+  servos.servoX.ChangeDutyCycle(SERVO_X_RESTING_DUTY)
+  while True:
+    servos.search_step()
+    #servos.print_positions()
+    time.sleep(WAIT_TIME)
