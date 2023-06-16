@@ -8,9 +8,9 @@ SERVO_X_PIN_OUT = 12
 SERVO_Y1_PIN_OUT = 11
 SERVO_Y2_PIN_OUT = 13
 SERVO_X_RESTING_DUTY = 6
-SERVO_Y_RESTING_DUTY = 6
-SERVO_X_RANGE =  5
-SERVO_Y_RANGE =  3
+SERVO_Y_RESTING_DUTY = 5
+SERVO_X_RANGE =  1.5
+SERVO_Y_RANGE =  1
 WAIT_TIME = 0.5
 
 class Servos:
@@ -21,8 +21,8 @@ class Servos:
 
   def __init__(self):
     # Constants
-    self.servoXDutyInc = 1
-    self.servoYDutyInc = 2
+    self.servoXDutyInc = 0.5
+    self.servoYDutyInc = 1
     self.servoXBounds = (SERVO_X_RESTING_DUTY - SERVO_X_RANGE, SERVO_X_RESTING_DUTY + SERVO_X_RANGE)
     self.servoYBounds = (SERVO_Y_RESTING_DUTY - SERVO_Y_RANGE, SERVO_Y_RESTING_DUTY + SERVO_Y_RANGE)
 
