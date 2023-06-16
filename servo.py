@@ -4,8 +4,9 @@ import time
 
 # Constants
 SERVO_DUTY_FREQ = 50
-SERVO_X_PIN_OUT = 11
-SERVO_Y_PIN_OUT = 12
+SERVO_X_PIN_OUT = 12
+SERVO_Y1_PIN_OUT = 11
+SERVO_Y2_PIN_OUT = 13
 SERVO_X_RESTING_DUTY = 6
 SERVO_Y_RESTING_DUTY = 6
 SERVO_X_RANGE =  5
@@ -22,35 +23,34 @@ class Servos:
     # Constants
     self.servoXDutyInc = 1
     self.servoYDutyInc = 2
-    self.minServoXBounds = SERVO_X_RESTING_DUTY - SERVO_X_RANGE
-    self.maxServoXBounds = SERVO_Y_RESTING_DUTY + SERVO_X_RANGE
-    self.minServoYBounds = SERVO_Y_RESTING_DUTY - SERVO_Y_RANGE
-    self.maxServoYBounds = SERVO_Y_RESTING_DUTY + SERVO_Y_RANGE
-
-    # Set mode as BOARD
-    GPIO.setmode(GPIO.BOARD) # move to generic area
+    self.servoXBounds = (SERVO_X_RESTING_DUTY - SERVO_X_RANGE, SERVO_X_RESTING_DUTY + SERVO_X_RANGE)
+    self.servoYBounds = (SERVO_Y_RESTING_DUTY - SERVO_Y_RANGE, SERVO_Y_RESTING_DUTY + SERVO_Y_RANGE)
 
     # Initialize servomotor instances
     GPIO.setup(SERVO_X_PIN_OUT, GPIO.OUT)
-    GPIO.setup(SERVO_Y_PIN_OUT, GPIO.OUT)
+    GPIO.setup(SERVO_Y1_PIN_OUT, GPIO.OUT)
+    GPIO.setup(SERVO_Y2_PIN_OUT, GPIO.OUT)
     self.servoX = GPIO.PWM(SERVO_X_PIN_OUT, SERVO_DUTY_FREQ)
-    self.servoY = GPIO.PWM(SERVO_Y_PIN_OUT, SERVO_DUTY_FREQ)
+    self.servoY1 = GPIO.PWM(SERVO_Y1_PIN_OUT, SERVO_DUTY_FREQ)
+    self.servoY2 = GPIO.PWM(SERVO_Y2_PIN_OUT, SERVO_DUTY_FREQ)
 
     # Start servos
     self.servoX.start(SERVO_X_RESTING_DUTY)
-    self.servoY.start(SERVO_Y_RESTING_DUTY)
+    self.servoY1.start(SERVO_Y_RESTING_DUTY)
+    self.servoY2.start(SERVO_Y_RESTING_DUTY)
     time.sleep(WAIT_TIME)
     
     # Set servos to starting positions
     self.dutyX = SERVO_X_RESTING_DUTY
-    self.dutyY = SERVO_Y_RESTING_DUTY
+    self.dutyY1 = SERVO_Y_RESTING_DUTY
+    self.dutyY2 = SERVO_Y_RESTING_DUTY
 
   def __del__(self):
     # Clean up
     self.servoX.stop()
-    self.servoY.stop()
-    GPIO.cleanup() # move to generic area
-
+    self.servoY1.stop()
+    self.servoY2.stop()
+     
   def search_step(self):
     """
     Increments step in search path by one step.
@@ -60,25 +60,42 @@ class Servos:
     # Start rotating other way when 90 deg past resting angle
     if self.duty_x_at_bounds():
       self.servoXDutyInc *= -1
+      
+      # Y increment
+      self.search_step_Y()
 
-      # Reflect Y offset
-      self.servoYDutyInc *= -1
-      self.dutyY = SERVO_Y_RESTING_DUTY + self.servoYDutyInc
-      print("Y = " + str(self.dutyY))
-      self.servoY.ChangeDutyCycle(self.dutyY)
-    else:
-      # X increment
-      self.dutyX += self.servoXDutyInc
-      print("X = " + str(self.dutyX))
-      self.servoX.ChangeDutyCycle(self.dutyX)
-    
+    # X increment
+    self.search_step_X() # this will unfortunately skip checking the corners
+      
+    self.print_positions()
     time.sleep(WAIT_TIME)
 
-  def duty_x_at_bounds(self):
-    return self.dutyX in (self.minServoXBounds, self.minServoXBounds)
+  def search_step_X(self):
+    self.dutyX += self.servoXDutyInc
+    self.servoX.ChangeDutyCycle(self.dutyX)
 
-  def duty_y_at_bounds(self):
-    return self.dutyY in (self.minServoYBounds, self.minServoYBounds)
+  def search_step_Y(self):
+    if self.dutyY1 != SERVO_Y_RESTING_DUTY or self.dutyY2 != SERVO_Y_RESTING_DUTY:
+      self.dutyY1 = SERVO_Y_RESTING_DUTY
+      self.dutyY2 = SERVO_Y_RESTING_DUTY
+    else:
+      self.dutyY1 = SERVO_Y_RESTING_DUTY + self.servoYDutyInc
+      self.dutyY2 = SERVO_Y_RESTING_DUTY - self.servoYDutyInc
+
+    self.servoY1.ChangeDutyCycle(self.dutyY1)
+    self.servoY2.ChangeDutyCycle(self.dutyY2)
+
+  def print_positions(self):
+    print("X = " + str(self.dutyX) + " Y1 = " + str(self.dutyY1) + " Y2 = " + str(self.dutyY2))
+
+  def duty_x_at_bounds(self):
+    return self.dutyX in self.servoXBounds
+
+  def duty_y1_at_bounds(self):
+    return self.dutyY1 in self.servoYBounds
+  
+  def duty_y2_at_bounds(self):
+    return self.dutyY2 in self.servoYBounds
   
   def increment_servos(self, servoXInc, servoYInc):
     if self.duty_x_at_bounds() or self.duty_y_at_bounds():
